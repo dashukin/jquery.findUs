@@ -71,6 +71,12 @@
 		self.canCreateRoute = false;
 		self.routes = [];
 		self.routesInfo = [];
+		self.showClosestRoute = false;
+		self.routeMode = null;
+		self.validRouteModes = {
+			auto: true,
+			masstransit: true
+		};
 
 		options = options || {};
 		!_helper._isObject(options.mapConfig) && (options.mapConfig = {});
@@ -243,6 +249,9 @@
 				placemarkGeoObject = new ymaps.Placemark(pmCoordinates, {zIndex: 1000}, pmStyles);
 				self.map.geoObjects.add(placemarkGeoObject);
 				self._placemarksConfig._placemarks['placemark' + p] = placemarkGeoObject;
+
+				placemarkGeoObject.placemarkData = placemark.placemarkData || {};
+
 				handlers = _helper._isArray(placemark.handlers) && placemark.handlers;
 				for (h = 0, hLen = handlers.length; h < hLen; h += 1) {
 					handler = handlers[h];
@@ -288,11 +297,11 @@
 		}
 		pointsArray.push(endPoint);
 
-		routeMode = _helper._isString(options.routeMode) ? options.routeMode : 'auto';
+		self.routeMode = self.validateRouteModes(options.routeMode);
 
 		ymaps.route(pointsArray, {
 			mapStateAutoApply: true,
-			routingMode: routeMode,
+			routingMode: self.routeMode,
 			multiRoute: true
 		})
 			.done(function (multiRoute) {
@@ -320,7 +329,7 @@
 					routeData = {
 						routeIndex: r + 1, //prevent navigation link from showing 0 as "first"
 						activeClass: r === 0 ? 'active' : '',
-						routeMode: routeMode,
+						routeMode: self.routeMode,
 						segments: []
 					}
 
@@ -345,7 +354,7 @@
 								text: segmentProperties.get('street') ? segmentProperties.get('street') : segmentProperties.get('text') || '',
 								distance: segmentProperties.get('distance').text || '',
 								duration: segmentProperties.get('duration').text || '',
-								routeMode: routeMode
+								routeMode: self.routeMode
 							});
 						}
 					}
@@ -358,16 +367,19 @@
 			});
 	};
 
+
 	FindUs.prototype.clearRoutes = function () {
 		var self = this, map, routes, r, rLen;
+
 		self.$element.trigger('beforeRoutesCleared');
 		map = self.map;
 		routes = self.routes;
 		for (r = 0, rLen = routes.length; r < rLen; r += 1) {
 			map.geoObjects.remove(routes[r]);
 		}
+		self.showClosestRoute = false;
 		self.$element.trigger('routesCleared');
-	}
+	};
 
 	FindUs.prototype.getClosestPlacemark = function () {
 		var self = this, currentCoordinates, placemarks, p, placemark,
@@ -381,6 +393,7 @@
 		for (p in placemarks) {
 			if (placemarks.hasOwnProperty(p)) {
 				placemark = placemarks[p];
+				if (placemark.options.get('visible') === false) continue;
 				finalCoordinates = placemark.geometry.getCoordinates();
 				routeLength = ymaps.coordSystem.geo.getDistance(currentCoordinates, finalCoordinates);
 				routeLength = routeLength.toFixed(4) * 1000;
@@ -391,6 +404,61 @@
 			}
 		}
 		return shortestCoordinates;
+	};
+
+	/**
+	 *
+	 * @param f function to be called for each placemarks.
+	 * Should return true to make palcemark visible. Otherwise false.
+	 */
+	FindUs.prototype.filterPlacemarks = function (f, clearRoutes) {
+		if (typeof f !== 'function') return;
+
+		var self = this,
+			placemarks = self._placemarksConfig._placemarks,
+			p, placemark, visibilityStatus;
+
+		for (p in placemarks) {
+			if (placemarks.hasOwnProperty(p)) {
+				placemark = placemarks[p];
+				visibilityStatus =
+				placemark.options.set('visible', !!f.call(null, placemark, placemark.placemarkData));
+			}
+		}
+
+		if (!!clearRoutes) {
+			self.clearRoutes();
+		} else if (self.showClosestRoute === true) {
+			self.getClosestRoute({
+				from: self.getCurrentUserCoordinates(),
+				to: self.getClosestPlacemark(),
+				routeMode: self.routeMode
+			});
+		}
+	};
+
+	FindUs.prototype.getClosestRoute = function (options) {
+		var self = this,
+			routeMode,
+			clearRoutes;
+		options = options || {};
+		self.validateRouteModes(options.routeMode);
+		clearRoutes = typeof options.clearRoutes !== 'undefined' ? !!options.clearRoutes : true;
+
+		self.showClosestRoute = true;
+		self.createRoute({
+			from: self.getCurrentUserCoordinates(),
+			to: self.getClosestPlacemark(),
+			routeMode: routeMode || self.routeMode,
+			clearRoutes: clearRoutes
+		});
+
+	};
+
+	FindUs.prototype.validateRouteModes = function (routeMode) {
+		var self = this,
+			validRouteModes = self.validRouteModes;
+		return (validRouteModes.hasOwnProperty(routeMode) && (validRouteModes[routeMode] === true) && routeMode) || 'auto';
 	};
 
 

@@ -22,6 +22,9 @@
                 <a class="button radius small" id="createRouteAuto" href="#">Auto</a>
                 <a class="button radius small" id="createRouteMass" href="#">Masstransit</a>
                 <a class="button radius small" id="clearRoutes" href="#">Clear routes</a>
+                <a class="button radius small" id="filterPlacemarks" href="#">Filter placemarks</a>
+                <a class="button radius small" id="showAllPlacemarks" href="#">Show all placemarks</a>
+                <a class="button radius small" id="showClosestRoute" href="#">Show closest route</a>
             </div>
             <div class="large-6 medium-6 small-12">
                 <div class="logs" id="logs">
@@ -71,6 +74,9 @@
                         placemarkStyles: {
                             iconImageHref: 'images/map-marker-50.png'
                         },
+                        placemarkData: {
+                            someKey: true
+                        },
                         handlers: [{
                             type: 'mousedown',
                             handler: function (e) {
@@ -83,6 +89,9 @@
                         placemarkStyles: {
                             iconImageHref: 'images/map-marker-50.png'
                         },
+                        placemarkData: {
+                            someKey: false
+                        },
                         handlers: [{
                             type: 'mousedown',
                             handler: function (e) {
@@ -94,7 +103,7 @@
             }
         });
 
-        findUs = $map.data('findUs');
+        window.findUs = findUs = $map.data('findUs');
 
         $('#getCoordinates').click(function (e) {
             e.preventDefault();
@@ -124,6 +133,25 @@
         $('#clearRoutes').click(function (e) {
             e.preventDefault();
             findUs.clearRoutes();
+        });
+
+        $('#filterPlacemarks').click(function (e) {
+            e.preventDefault();
+            findUs.filterPlacemarks(function (placemark, data) {
+                return data.someKey === true;
+            }, true);
+        });
+
+        $('#showAllPlacemarks').click(function (e) {
+            e.preventDefault();
+            findUs.filterPlacemarks(function (placemark, data) {
+                return true;
+            });
+        });
+
+        $('#showClosestRoute').click(function (e) {
+            e.preventDefault();
+            findUs.getClosestRoute();
         });
 
         mapEvents = {
