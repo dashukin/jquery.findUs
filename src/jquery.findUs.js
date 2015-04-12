@@ -245,7 +245,7 @@
 			for (p = 0, pLen = placemarks.length; p < pLen; p += 1) {
 				placemark = placemarks[p];
 				pmCoordinates = (_helper._isArray(placemark.coordinates) && (placemark.coordinates.length === 2) && placemark.coordinates) || _helper._throwError('FindUs: invalid coordinates of placemark - ' + _helper._toString.call(placemark.coordinates));
-				pmStyles = _helper._isObject(placemark.placemarkStyles) && $.extend(self._placemarksConfig.placemarksStyles, placemark.placemarkStyles);
+				pmStyles = _helper._isObject(placemark.placemarkStyles) && $.extend({}, self._placemarksConfig.placemarksStyles, placemark.placemarkStyles);
 				placemarkGeoObject = new ymaps.Placemark(pmCoordinates, {zIndex: 1000}, pmStyles);
 				self.map.geoObjects.add(placemarkGeoObject);
 				self._placemarksConfig._placemarks['placemark' + p] = placemarkGeoObject;
