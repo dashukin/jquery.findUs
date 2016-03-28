@@ -45,7 +45,7 @@
 
         $map.findUs({
             mapConfig: {
-                center: [53.90109, 27.558759]
+                mapCenter: [53.90109, 27.558759]
             },
             userConfig: {
                 processUserCoordinates: true,
@@ -77,6 +77,7 @@
                         placemarkData: {
                             someKey: true
                         },
+                        balloonContent: '<div style="width: 100px; height: 50px;">Hello world!</div>',
                         handlers: [{
                             type: 'mousedown',
                             handler: function (e) {
@@ -107,14 +108,15 @@
 
         $('#getCoordinates').click(function (e) {
             e.preventDefault();
-            findUs.getUserCoordinates();
+            //findUs.getUserCoordinates();
+            // TODO
         });
 
         $('#createRouteAuto').click(function (e) {
             e.preventDefault();
             findUs.createRoute({
                 from: findUs.getCurrentUserCoordinates(),
-                to: findUs.getClosestPlacemark.call(findUs),
+                to: findUs.getClosestPlacemark(),
                 routeMode: 'auto',
                 clearRoutes: true
             });
@@ -124,7 +126,7 @@
             e.preventDefault();
             findUs.createRoute({
                 from: findUs.getCurrentUserCoordinates(),
-                to: findUs.getClosestPlacemark.call(findUs),
+                to: findUs.getClosestPlacemark(),
                 routeMode: 'masstransit',
                 clearRoutes: true
             });
@@ -151,24 +153,36 @@
 
         $('#showClosestRoute').click(function (e) {
             e.preventDefault();
-            findUs.getClosestRoute();
+            findUs.createRoute({
+                from: findUs.getCurrentUserCoordinates(),
+                to: findUs.getClosestPlacemark(),
+                clearRoutes: true
+            });
         });
 
         mapEvents = {
-            beforeMapCreated: 'Package has been loaded.',
-            mapCreated: 'Map has been created.',
-            beforeGetUserCoordinates: 'Going to get user coordinates.',
-            userCoordinatesRetrieved: 'Successfully got user coordinates.',
-            userCoordinatesFailed: 'An error occurred when tryed to retrieve coordinates.',
-            navigatorError: 'Your browser does not support geolocation API.',
-            userPlacemarkCreated: 'User placemark has been created.',
-            beforeBoundCoordinates: 'Going to bound coordinates.',
-            boundCoordinates: 'Coordinates has been bounded.',
-            beforeRouteCreated: 'Going to find route.',
-            routeCreated: 'Route has been created',
-            routeError: 'Ough.. A problem occurred when tryed to find route.',
-            beforeRoutesCleared: 'Going to clear routes.',
-            routesCleared: 'All routes has been cleared'
+            beforeMapCreated: 'beforeMapCreated',
+            mapCreated: 'mapCreated',
+            beforeGetUserCoordinates: 'beforeGetUserCoordinates',
+            userCoordinatesRetrieved: 'userCoordinatesRetrieved',
+            userCoordinatesFailed: 'userCoordinatesFailed',
+            navigatorError: 'navigatorError',
+            userPlacemarkCreated: 'userPlacemarkCreated',
+            beforeBoundCoordinates:'beforeBoundCoordinates',
+            boundCoordinates: 'boundCoordinates',
+            beforePlacemarksCreated: 'beforePlacemarksCreated',
+            onAfterCreatePlacemarks: 'onAfterCreatePlacemarks',
+            beforeRouteCreated: 'beforeRouteCreated',
+            routeCreated: 'routeCreated',
+            routeError: 'routeError',
+            beforeRoutesCleared: 'beforeRoutesCleared',
+            routeError: 'routeError',
+            beforeRoutesCleared: 'beforeRoutesCleared',
+            routesCleared: 'routesCleared',
+            beforePlacemarksFiltered: 'beforePlacemarksFiltered',
+            placemarksFiltered: 'placemarksFiltered',
+            beforeClosestRouteRetrieved: 'beforeClosestRouteRetrieved',
+            closestRouteRetrieved: 'closestRouteRetrieved'
         };
 
         for (ev in mapEvents) {
