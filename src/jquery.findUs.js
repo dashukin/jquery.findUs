@@ -4,7 +4,7 @@
  * @license MIT License; http://www.opensource.org/licenses/mit-license.php
  * @url   https://github.com/dashukin/jquery.findUs
  * @author  Vasili Molakhau <dashukin@gmail.com>
- * @version 0.1.0
+ * @version 0.2.0
  */
 ;(function ($) {
 
