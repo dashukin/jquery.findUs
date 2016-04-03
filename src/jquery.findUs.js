@@ -273,7 +273,7 @@
 				placemarkGeoObject = new ymaps.Placemark(pmCoordinates, {
 					zIndex: 1000,
 					balloonContent: _helper._isString(placemark.balloonContent) ? placemark.balloonContent : null,
-					clusterCaption: placemark.placemarkData['categoryName'],
+					clusterCaption: _helper._isObject(placemark.placemarkData) && _helper._isString(placemark.placemarkData['categoryName']) ? placemark.placemarkData['categoryName'] : '',
 					balloonContentBody: _helper._isString(placemark.balloonContent) ? placemark.balloonContent : null
 				}, pmStyles);
 
