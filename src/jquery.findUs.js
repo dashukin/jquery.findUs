@@ -101,6 +101,8 @@
 
 		self._userConfig = {
 			processUserCoordinates: !!userConfig['processUserCoordinates'] || false,
+			defaultUserCoordinates: _helper._isArray(userConfig.defaultUserCoordinates) ? userConfig.defaultUserCoordinates : null,
+			coordinates: null,
 			balloonContent: userConfig['balloonContent'] || '',
 			placemarkStyles: userConfig['placemarkStyles'] || {},
 			placemark: null
@@ -167,7 +169,12 @@
 				self.createUserPlacemark();
 			}, function (error) {
 				self.$element.trigger('userCoordinatesFailed', error.code, error.message);
-				self.createUserPlacemark();
+				// set user coordinates to default (if specified)
+				if (self._userConfig.defaultUserCoordinates !== null) {
+					self._userConfig.coordinates = self._userConfig.defaultUserCoordinates;
+					self._userConfig.accuracy  = 1000;
+					self.createUserPlacemark();
+				}
 				self.map.setCenter(self._mapConfig.center, 10);
 				_helper._log('FindUs.getUserCoordinates: ' + error.code + ' ' + error.message, 'warn');
 			}, {
@@ -186,6 +193,13 @@
 	 */
 	FindUs.prototype.createUserPlacemark = function () {
 		var self = this;
+
+		if (!_helper._isArray(self._userConfig.coordinates)) {
+			_helper._log('FindUs.createUserPlacemark: invalid type of user coordinates. ' +
+				'Action will not be performed.', 'warn');
+			return;
+		}
+
 		if (self._userConfig.placemark !== null) {
 			self._userConfig.placemark.geometry.setCoordinates(self._userConfig.coordinates);
 			return;
@@ -256,7 +270,6 @@
 				placemark = placemarks[p];
 				pmCoordinates = (_helper._isArray(placemark.coordinates) && (placemark.coordinates.length === 2) && placemark.coordinates) || _helper._throwError('FindUs: invalid coordinates of placemark - ' + _helper._toString.call(placemark.coordinates));
 				pmStyles = _helper._isObject(placemark.placemarkStyles) && $.extend({}, self._placemarksConfig.placemarksStyles, placemark.placemarkStyles);
-				console.log(placemark);
 				placemarkGeoObject = new ymaps.Placemark(pmCoordinates, {
 					zIndex: 1000,
 					balloonContent: _helper._isString(placemark.balloonContent) ? placemark.balloonContent : null,
